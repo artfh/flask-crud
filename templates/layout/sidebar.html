@@ -1,0 +1,38 @@
+{% extends "layout/default.html" %}
+
+{% block main %}
+
+<div class="row">
+
+<div class="span3">
+	<ul class="nav nav-list" style="margin-top:15px;">
+    <li class="nav-header">Tables</li>
+
+{% for target, caption in [('users', 'Users'), ('roles', 'Roles')] %}
+
+
+{% if target == navigation_hint %}
+{% set active_class = 'active' %}	
+{% else %}
+{% set active_class = '' %}	
+{% endif %}
+
+	<li  class="{{active_class}}" ><a href="{{ url_for( target) }}">{{ caption }}</a></li>
+
+
+{% endfor %}
+
+  </ul>
+</div>
+
+<div class="span9">
+
+{% block content %}
+  <h1>Users</h1>
+{% endblock %}
+
+</div>
+
+</div>
+
+{% endblock %}

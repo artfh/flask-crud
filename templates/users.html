@@ -1,0 +1,28 @@
+{% extends "layout/sidebar.html" %}
+
+
+{% set navigation_hint = 'users' %}
+
+{% block content %}
+
+<h1>Users</h1>
+
+<table class="table table-hover">
+              <thead>
+                <tr>       
+                  <th>First Name</th>
+                  <th>Last Name</th>
+                  <th>Username</th>
+                </tr>
+              </thead>
+
+{% for row in rows %}
+    <tr>
+      <td>{{ row.first_name }}</td>
+      <td>{{ row.last_name }}</td>
+      <td>{{ row.username }}</td>
+    </tr>
+  {% endfor %}
+</table>
+
+{% endblock %}

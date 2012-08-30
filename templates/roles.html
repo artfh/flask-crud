@@ -1,0 +1,25 @@
+{% extends "layout/sidebar.html" %}
+
+{% set navigation_hint = 'roles' %}
+
+{% block content %}
+
+<h1>Roles</h1>
+
+<table class="table table-hover">
+              <thead>
+                <tr>       
+                  <th>Name</th>
+                  <th>Actions</th>
+                 </tr>
+              </thead>
+
+{% for row in rows %}
+    <tr>
+      <td>{{ row.name }}</td>
+      <td>{{ row.actions }}</td>
+    </tr>
+  {% endfor %}
+</table>
+
+{% endblock %}
