@@ -1,5 +1,7 @@
 from flask import Flask
-from flask import render_template,request, session, redirect, url_for
+from flask import render_template,request, session, redirect, url_for, flash
+
+import random
 
 
 app = Flask(__name__)
@@ -7,9 +9,9 @@ app.secret_key = 'A0Zr98j/3yX R~XsH!jmN]LWX/,?RT'
 
 
 user_list=[
-	{ 'first_name':'Mark', 'last_name':'Otto', 'username':'@mdo'},
-	{ 'first_name':'Jacob', 'last_name':'Thornton', 'username':'@fat'},
-	{ 'first_name':'Larry the Bird', 'username':'@twitter'}
+	{ 'id':1, 'first_name':'Mark', 'last_name':'Otto', 'username':'@mdo'},
+	{ 'id':2, 'first_name':'Jacob', 'last_name':'Thornton', 'username':'@fat'},
+	{ 'id':3, 'first_name':'Larry the Bird', 'username':'@twitter'}
 ]
 
 role_list=[
@@ -22,9 +24,47 @@ role_list=[
 def index():
 	return render_template('index.html')
 
-@app.route("/users")
+@app.route("/users", methods=['POST', 'GET'])
 def users():
-	return render_template('users.html', rows=user_list)
+
+	if request.method == 'POST':
+		user={}
+		user['first_name']=request.form['first_name']
+		user['last_name']=request.form['last_name']
+		user['username']=request.form['username']
+		user['id']=random.randint(0,100000)
+		user_list.append(user)
+		flash('User <strong>{username}</strong> created!'.format(username=user['username']))
+		return redirect(url_for('users'))	
+
+	return render_template('user/list.html', rows=user_list)
+
+@app.route("/users/new")
+def new_user():
+	return render_template('user/new.html', obj={})	
+
+
+@app.route("/users/del/<int:user_id>")
+def delete_user(user_id):
+	user = next(u for u in user_list if u['id'] == user_id)
+	user_list.remove(user)
+	flash('User <strong>{username}</strong> deleted!'.format(username=user['username']))
+	return redirect(url_for('users'))	
+
+
+@app.route("/users/<int:user_id>", methods=['POST', 'GET'])
+def get_user(user_id):
+	user = next(u for u in user_list if u['id'] == user_id)
+	if request.method == 'POST':
+		user['first_name']=request.form['first_name']
+		user['last_name']=request.form['last_name']
+		user['username']=request.form['username']	
+		flash('User <strong>{username}</strong> updated!'.format(username=user['username']))
+		return redirect(url_for('get_user', user_id=user_id))
+	return render_template('user/edit.html', obj=user)	
+
+
+
 
 @app.route("/roles")
 def roles():

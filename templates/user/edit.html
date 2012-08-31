@@ -1,0 +1,46 @@
+{% extends "layout/sidebar.html" %}
+
+{% import 'macros/forms.html' as forms %}
+
+{% set navigation_hint = 'users' %}
+
+{% block main_title %}<small>User</small> {{obj.username}} {% endblock %}
+
+{% block main_body %}
+
+
+<form class="form-horizontal" method="post" >
+            <legend>Edit User</legend>
+         
+            {{ forms.input('username','Username', value=obj.username) }}
+            {{ forms.input('first_name','First Name' , value=obj.first_name) }}
+            {{ forms.input('last_name','Last Name', value=obj.last_name ) }}
+
+        
+<div class="form-actions">
+  <button type="submit" class="btn btn-primary">Save changes</button>
+  <a class="btn" href="{{ url_for('users') }}">Cancel</a> 
+  <span style="margin-left:20px;margin-right:20px;">or</span> 
+
+<a href="#myModal" role="button" class="btn btn-danger" data-toggle="modal">Delete</a>
+</div>
+
+
+          </form>
+
+
+<div class="modal hide" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    <h3 id="myModalLabel">Confirm Delete</h3>
+  </div>
+  <div class="modal-body">
+    <p>Are you sure you want to delete <strong>{{obj.username}}</strong>?</p>
+  </div>
+  <div class="modal-footer">
+    <button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>
+    <a href="{{ url_for('delete_user', user_id=obj.id) }}" class="btn btn-danger" >Delete</a>
+  </div>
+</div>          
+
+{% endblock %}
