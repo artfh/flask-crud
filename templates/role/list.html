@@ -1,0 +1,14 @@
+{% extends "crud/list.html" %}
+
+{% block main_title %}Roles{% endblock %}
+
+{% block table_header %}      
+ <th>Name</th>
+<th>Actions</th>
+{% endblock %}
+
+
+{% block table_row %}      
+      <td><a href="{{ url_for('%s.edit' % crud_name, id=crud.get_id(row)) }}">{{ row.name }}</a></td>
+      <td>{{ row.actions }}</td>
+{% endblock %}

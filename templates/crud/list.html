@@ -1,0 +1,27 @@
+{% extends "layout/sidebar.html" %}
+
+
+{% block main_title %}List{% endblock %}
+{% block main_title_actions %}<a href="{{ url_for( '%s.new' % crud_name) }}" class="btn">Add Item</a>{% endblock %}
+
+{% block main_body %}
+
+<table class="table table-hover">
+              <thead>
+                <tr> 
+                {% block table_header %}      
+                  <th>Object</th>
+                {% endblock %}                
+                </tr>
+              </thead>
+
+{% for row in rows %}
+    <tr>
+      {% block table_row scoped %}
+      <td><a href="{{ url_for('%s.edit' % crud_name, id=crud.get_id(row)) }}">{{ row }}</a></td>
+      {% endblock %}  
+    </tr>
+  {% endfor %}
+</table>
+
+{% endblock %}

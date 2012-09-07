@@ -1,0 +1,25 @@
+{% extends "layout/sidebar.html" %}
+
+{% import 'macros/forms.html' as forms %}
+
+
+{% block main_title %} New Object {% endblock %}
+
+{% block main_body %}
+
+
+<form class="form-horizontal" method="post" >
+	{% block form %}
+            <legend>Add</legend>
+    {% endblock %}     
+           
+        
+<div class="form-actions">
+  <button type="submit" class="btn btn-primary">Save changes</button>
+  <a class="btn" href="{{ url_for('%s.list' % crud_name) }}">Cancel</a> 
+</div>
+
+
+          </form>
+
+{% endblock %}
