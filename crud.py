@@ -3,13 +3,19 @@ import random
 
 
    
-class Crud(object):
+class BaseCrud(object):
     
-    def __init__(self, name, pk_type='int'):
-        super(Crud, self).__init__()
+
+    def __init__(self, name, **kwargs):
+        super(BaseCrud, self).__init__()
         self.name=name
-        self.pk_type=pk_type
-        self.navigation_hint=None
+        self.pk_type='int'
+        self.navigation_hint=name+'.list'
+
+        if 'pk_type' in kwargs: self.pk_type=kwargs['pk_type'] 
+        if 'navigation_hint' in kwargs: self.navigation_hint=kwargs['navigation_hint'] 
+
+
 
     def list(self):
         context = self.__get_context()
@@ -26,7 +32,7 @@ class Crud(object):
         obj=self.get_object(id)
         context = self.__get_context()
         context['obj']=obj
-
+        
         if request.method == 'POST':
             self.formToModel(request.form, obj, False)
             self.update(obj)
@@ -78,17 +84,22 @@ class Crud(object):
 
 
 
-class SimpleCrud(Crud):
+class BaseDictCrud(BaseCrud):
 
-    def __init__(self, name, label_prop, pk_name='id', pk_type='int', objects=[]):
-        super(SimpleCrud, self).__init__(name, pk_type)
-        self.objects=objects
-        self.pk_name=pk_name
-        self.label_prop=label_prop
+    def __init__(self, name, **kwargs):
+        super(BaseDictCrud, self).__init__(name, **kwargs)
+        self.objects=[]
+        self.pk_prop='id'
+        self.label_prop='name'
+
+        if 'objects' in kwargs: self.objects=kwargs['objects'] 
+        if 'pk_prop' in kwargs: self.pk_prop=kwargs['pk_prop'] 
+        if 'label_prop' in kwargs: self.label_prop=kwargs['label_prop'] 
+
 
 
     def get_object(self,id):
-        return  next(u for u in self.objects if u[self.pk_name] == id)
+        return  next(u for u in self.objects if u[self.pk_prop] == id)
 
     def get_objects(self):
         return self.objects  
@@ -97,7 +108,7 @@ class SimpleCrud(Crud):
         return {}             
 
     def get_id(self, obj):
-        return obj[self.pk_name]
+        return obj[self.pk_prop]
 
     def get_label(self, obj):
         return obj[self.label_prop]
@@ -113,15 +124,29 @@ class SimpleCrud(Crud):
 
     def delete_obj(self,obj):
         self.objects.remove(obj)
+
+
         
 
-class RoleCrud(SimpleCrud):
-
-   
-
-    def formToModel(self, form, obj, isNew):
-        obj['name']=request.form['name']
-        obj['actions']=request.form['actions']
-        if isNew:
-            obj[self.pk_name]=random.randint(0,100000)
+class CrudMeta(type):
+    def __init__(cls, name, bases, attrs):
+        type.__init__(cls, name, bases, attrs)
         
+        options = {}
+        for name in dir(cls):
+            if not name.startswith('_'):
+                f = getattr(cls, name)
+                options[name]=f
+        cls._options = options
+            
+               
+
+class Crud( CrudMeta('NewBase',(BaseDictCrud,),{})):
+    
+    def __init__(self):
+        super(Crud, self).__init__(**self._options)    
+
+
+if __name__ == '__main__':
+    c=BaseDictCrud('name', pk_type='int', navigation_hint='2')
+    print c.navigation_hint

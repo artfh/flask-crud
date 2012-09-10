@@ -1,29 +1,19 @@
-{% extends "layout/sidebar.html" %}
-
-{% set navigation_hint = 'users' %}
+{% extends "crud/list.html" %}
 
 {% block main_title %}Users{% endblock %}
-{% block main_title_actions %}<a href="{{ url_for('new_user') }}" class="btn">Add User</a>{% endblock %}
 
-{% block main_body %}
-
-<table class="table table-hover">
-              <thead>
-                <tr>       
-                  <th>Username</th>
-                  <th>First Name</th>
-                  <th>Last Name</th>
-                </tr>
-              </thead>
-
-{% for row in rows %}
-    <tr>
-      <td><a href="{{ url_for('get_user', user_id=row.id) }}">{{ row.username }}</a></td>
-    
-      <td>{{ row.first_name }}</td>
-      <td>{{ row.last_name }}</td>
-    </tr>
-  {% endfor %}
-</table>
-
+{% block table_header %}      
+        <th>Username</th>
+        <th>First Name</th>
+        <th>Last Name</th>
 {% endblock %}
+
+
+{% block table_row %}      
+      <td><a href="{{ url_for('%s.edit' % crud_name, id=crud.get_id(row)) }}">{{ row.username }}</a></td>
+      <td>{{ row.first_name }}</td>
+        <td>{{ row.last_name }}</td>
+{% endblock %}
+
+
+

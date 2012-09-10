@@ -4,7 +4,8 @@ from flask import render_template,request, session, redirect, url_for, flash
 import random
 
 import crud
-import models.user
+import models.role
+
 
 
 
@@ -18,11 +19,6 @@ user_list=[
 	{ 'id':3, 'first_name':'Larry the Bird', 'username':'@twitter'}
 ]
 
-role_list=[
-	{ 'id':1,'name':'Administator', 'actions':'read,write'},
-	{ 'id':2,'name':'User', 'actions':'read'},
-	{ 'id':3,'name':'Developer', 'actions':'read,write,create'}
-]
 
 @app.route("/")
 def index():
@@ -77,9 +73,9 @@ def roles():
 
 #form=[ { 'name':'name', 'label':'Name', 'widget':'text',  }] 
 
-c=crud.RoleCrud('role', objects=role_list, label_prop="name" )
-c.navigation_hint='role.list'
-c.register(app,'/role/')
+
+models.role.Role().register(app,'/role/')
+models.role.User().register(app,'/user/')
 
 
 if __name__ == "__main__":
