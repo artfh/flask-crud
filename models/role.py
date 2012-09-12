@@ -14,31 +14,42 @@ user_list1=[
     { 'id':3, 'first_name':'Larry the Bird', 'username':'@twitter'}
 ]
 
+
 class Role(crud.Crud):
 
-    name='role'
     objects=role_list1
+
+    name='role'
+    label='Role'
     
-    def formToModel(self, form, obj, isNew):
-        obj['name']=request.form['name']
-        obj['actions']=request.form['actions']
-        if isNew:
-            obj[self.pk_prop]=random.randint(0,100000)
+    form=[
+        {   'name':'name',
+            'type':'text',
+            'label':'Name'
+        },
+        {   'name':'actions',
+            'type':'text',
+            'label':'Actions'
+        }
+    ]
+    
 
 
 class User(crud.Crud):
 
-    name='user'
     objects=user_list1
-    label_prop='username'
-    
-    def formToModel(self, form, obj, isNew):
-        obj['first_name']=request.form['first_name']
-        obj['last_name']=request.form['last_name']
-        obj['username']=request.form['username']
-        if isNew:
-            obj[self.pk_prop]=random.randint(0,100000)
 
+    name='user'
+    label='User'
+    label_prop='username'
+
+    form=[
+        {   'name':'first_name', 'type':'text','label':'First Name'   },
+        {   'name':'last_name', 'type':'text','label':'Last Name'   },
+        {   'name':'username', 'type':'text','label':'Username'   }     
+    ]
+    
+   
 
 
 

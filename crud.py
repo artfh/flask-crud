@@ -11,9 +11,13 @@ class BaseCrud(object):
         self.name=name
         self.pk_type='int'
         self.navigation_hint=name+'.list'
+        self.form=[]
+        self.label=name
 
         if 'pk_type' in kwargs: self.pk_type=kwargs['pk_type'] 
         if 'navigation_hint' in kwargs: self.navigation_hint=kwargs['navigation_hint'] 
+        if 'form' in kwargs: self.form=kwargs['form'] 
+        if 'label' in kwargs: self.label=kwargs['label'] 
 
 
 
@@ -32,14 +36,17 @@ class BaseCrud(object):
         obj=self.get_object(id)
         context = self.__get_context()
         context['obj']=obj
+        context['form']=self.form
+        
         
         if request.method == 'POST':
             self.formToModel(request.form, obj, False)
             self.update(obj)
             flash('<strong>{name}</strong> updated!'.format(name=self.get_label(obj)))
             return redirect(url_for('%s.list' % self.name, id=id))
-
-        return render_template('%s/edit.html' % self.name , **context)
+        template='%s/edit.html' % self.name
+        template='crud/edit.html' 
+        return render_template(template , **context)
 
     def delete(self, id):
         obj=self.get_object(id)
@@ -53,14 +60,17 @@ class BaseCrud(object):
         obj=self.new_object()
         context = self.__get_context()
         context['obj']=obj
-      
+        context['form']=self.form
+
         if request.method == 'POST':
             self.formToModel(request.form, obj, True)
             self.save(obj)
             flash('<strong>{name}</strong> created!'.format(name=self.get_label(obj)))
             return redirect(url_for('%s.list' % self.name))
 
-        return render_template('%s/new.html' % self.name, **context) 
+        template='%s/new.html' % self.name
+        template='crud/new.html' 
+        return render_template( template , **context) 
 
     def __get_context(self):
         ctx= { 'crud_name':self.name, 'crud':self }
@@ -114,7 +124,11 @@ class BaseDictCrud(BaseCrud):
         return obj[self.label_prop]
 
     def formToModel(self, form, obj ,isNew):
-        pass
+        for f in self.form:
+            obj[f['name']]=request.form[f['name']]
+        if isNew:
+            obj[self.pk_prop]=random.randint(0,100000)
+        
 
     def save(self,obj):
         self.objects.append(obj)

@@ -9,4 +9,13 @@
 {%- endmacro %}
 
 
-  
+
+{% macro form_body(form, obj) -%}
+
+{% for k in form %}
+
+ {{ input(k.name,k.label, value=obj[k.name]) }}
+
+{% endfor %}
+
+{%- endmacro %}  

@@ -3,14 +3,17 @@
 {% import 'macros/forms.html' as forms %}
 
 
-{% block main_title %}<small>Object</small> {{obj}} {% endblock %}
+{% block main_title %}<small>{{crud.label}}</small> {{ crud.get_label(obj)}} {% endblock %}
 
 {% block main_body %}
 
 
 <form class="form-horizontal" method="post" >
 	{% block form %}
-            <legend>Edit</legend>
+            <legend>Edit {{crud.label}}</legend>
+
+  {{ forms.form_body(form, obj)}}
+
     {% endblock %}     
            
         
