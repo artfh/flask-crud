@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Project</title>
+    <title>{{app.project_name}}</title>
     <!-- Bootstrap -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="{{ url_for('static',filename='bootstrap/css/bootstrap.css')}}" rel="stylesheet">
@@ -20,7 +20,7 @@
 	<div class="navbar navbar-fixed-top">
       <div class="navbar-inner">
         <div class="container">
-          <a class="brand" href="{{ url_for('index') }}">Project</a>
+          <a class="brand" href="{{ url_for('index') }}">{{app.project_name}}</a> {{current_app}}
         </div>
       </div>
     </div>

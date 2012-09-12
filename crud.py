@@ -13,11 +13,15 @@ class BaseCrud(object):
         self.navigation_hint=name+'.list'
         self.form=[]
         self.label=name
+        self.url='/{0}/'.format(name)
+        self.parent=None
+
 
         if 'pk_type' in kwargs: self.pk_type=kwargs['pk_type'] 
         if 'navigation_hint' in kwargs: self.navigation_hint=kwargs['navigation_hint'] 
         if 'form' in kwargs: self.form=kwargs['form'] 
         if 'label' in kwargs: self.label=kwargs['label'] 
+        if 'url' in kwargs: self.url=kwargs['url'] 
 
 
 
@@ -74,6 +78,8 @@ class BaseCrud(object):
 
     def __get_context(self):
         ctx= { 'crud_name':self.name, 'crud':self }
+        if self.parent:
+            ctx['app']=self.parent
         if self.navigation_hint:
             ctx['navigation_hint']=self.navigation_hint
         return ctx    
@@ -85,12 +91,12 @@ class BaseCrud(object):
         return obj
     
 
-    def register(self, app, url):
-        app.add_url_rule('%sl' % url, '{0}.list'.format(self.name), self.list)   
-        app.add_url_rule('%sv/<%s:id>' % (url, self.pk_type), '{0}.view'.format(self.name), self.view)   
-        app.add_url_rule('%se/<%s:id>' % (url, self.pk_type), '{0}.edit'.format(self.name), self.edit, methods=['POST', 'GET'])   
-        app.add_url_rule('%sd/<%s:id>' % (url, self.pk_type), '{0}.delete'.format(self.name), self.delete)   
-        app.add_url_rule('%sn' % url, '{0}.new'.format(self.name), self.new, methods=['POST', 'GET'])   
+    def register(self, app):
+        app.add_url_rule('%sl' % self.url, '{0}.list'.format(self.name), self.list)   
+        app.add_url_rule('%sv/<%s:id>' % (self.url, self.pk_type), '{0}.view'.format(self.name), self.view)   
+        app.add_url_rule('%se/<%s:id>' % (self.url, self.pk_type), '{0}.edit'.format(self.name), self.edit, methods=['POST', 'GET'])   
+        app.add_url_rule('%sd/<%s:id>' % (self.url, self.pk_type), '{0}.delete'.format(self.name), self.delete)   
+        app.add_url_rule('%sn' % self.url, '{0}.new'.format(self.name), self.new, methods=['POST', 'GET'])   
 
 
 
@@ -161,6 +167,21 @@ class Crud( CrudMeta('NewBase',(BaseDictCrud,),{})):
         super(Crud, self).__init__(**self._options)    
 
 
+class AppModel(object):
+    def __init__(self):
+        super(AppModel, self).__init__()
+        self.project_name='Project1'
+        self.roots=[]  
+
+    def register(self, app):
+        for f in self.roots:
+            f.register(app)
+            
+
+    def add(self, root):
+        self.roots.append(root)
+        root.parent=self        
+    
 if __name__ == '__main__':
     c=BaseDictCrud('name', pk_type='int', navigation_hint='2')
     print c.navigation_hint

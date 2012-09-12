@@ -52,4 +52,9 @@ class User(crud.Crud):
    
 
 
-
+def createModel():
+    app_model=crud.AppModel()
+    app_model.project_name="My Project"
+    app_model.add(User())
+    app_model.add(Role())
+    return app_model

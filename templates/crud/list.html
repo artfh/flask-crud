@@ -2,7 +2,7 @@
 
 
 {% block main_title %}List{% endblock %}
-{% block main_title_actions %}<a href="{{ url_for( '%s.new' % crud_name) }}" class="btn">Add Item</a>{% endblock %}
+{% block main_title_actions %}<a href="{{ url_for( '%s.new' % crud_name) }}" class="btn">Add {{crud.label}}</a>{% endblock %}
 
 {% block main_body %}
 

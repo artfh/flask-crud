@@ -8,16 +8,16 @@
 	<ul class="nav nav-list" style="margin-top:15px;">
     <li class="nav-header">Tables</li>
 
-{% for target, caption in [('user.list', 'Users'), ('role.list', 'Roles')] %}
+{% for root in app.roots %}
 
 
-{% if target == navigation_hint %}
+{% if '%s.list' % root.name == navigation_hint %}
 {% set active_class = 'active' %}	
 {% else %}
 {% set active_class = '' %}	
 {% endif %}
 
-	<li  class="{{active_class}}" ><a href="{{ url_for( target) }}">{{ caption }}</a></li>
+	<li  class="{{active_class}}" ><a href="{{ url_for( '%s.list' % root.name ) }}">{{ root.label }}s</a></li>
 
 
 {% endfor %}
