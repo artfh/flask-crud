@@ -1,20 +1,36 @@
-{% macro input(name, label, value='', type='text', placeholder='') -%}
+{% import 'macros/cruds.html' as cruds %}
 
- <div class="control-group">
+{% macro input(name, label, value='', type='text', placeholder='', errors=None) -%}
+
+{% set error_class = '' %}	
+{% if errors %}
+{% set error_class = 'error' %}	
+{% endif %}
+
+ <div class="control-group {{error_class}}">
  	<label class="control-label" for="{{ name }}Id">{{ label }}</label>
 		<div class="controls">
-        	<input type="{{ type }}" name="{{ name }}"  id="{{ name }}Id" placeholder="{{placeholder}}" value="{{ value|e }}">
+        	<input type="{{ type }}" name="{{ name }}"  id="{{ name }}Id" placeholder="{{placeholder}}" value="{{ value }}">
+
+        	{% if errors %}
+         <span class="help-inline">{{errors}}</span>
+        	{% endif %}
+
 		</div>
 </div>
 {%- endmacro %}
 
 
 
-{% macro form_body(form, obj) -%}
+{% macro form_body(form, data, errors) -%}
 
-{% for k in form %}
+{% if not errors %}
+{% set errors = {} %}	
+{% endif %}
 
- {{ input(k.name,k.label, value=obj[k.name]) }}
+{% for k in form.fields %}
+
+ {{ input(k.name, k.label, value=k.value(data), errors=errors.get(k.name) ) }}
 
 {% endfor %}
 

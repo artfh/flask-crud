@@ -1,6 +1,7 @@
-from flask import render_template,request, session, redirect, url_for, flash
+from flask import render_template,request, session, redirect, url_for, flash,current_app
 import random
-
+import os
+from forms import Form, create_form
 
    
 class BaseCrud(object):
@@ -15,20 +16,28 @@ class BaseCrud(object):
         self.label=name
         self.url='/{0}/'.format(name)
         self.parent=None
+        self.labels={}
+        self.list_columns=[]
+        self.form=Form()
+
 
 
         if 'pk_type' in kwargs: self.pk_type=kwargs['pk_type'] 
         if 'navigation_hint' in kwargs: self.navigation_hint=kwargs['navigation_hint'] 
-        if 'form' in kwargs: self.form=kwargs['form'] 
         if 'label' in kwargs: self.label=kwargs['label'] 
         if 'url' in kwargs: self.url=kwargs['url'] 
+        if 'labels' in kwargs: self.labels=kwargs['labels'] 
+        if 'list_columns' in kwargs: self.list_columns=kwargs['list_columns'] 
+        if 'form' in kwargs: 
+            self.form=create_form(kwargs['form'],self.labels)  
+        
 
 
 
     def list(self):
         context = self.__get_context()
         context['rows']=self.get_objects()
-        return render_template('%s/list.html' % self.name , **context)
+        return self.render('list', context) 
 
     def view(self, id):
         obj=self.get_object(id)
@@ -41,16 +50,21 @@ class BaseCrud(object):
         context = self.__get_context()
         context['obj']=obj
         context['form']=self.form
-        
+        context['form_data']=self.form.form_data(obj)
         
         if request.method == 'POST':
-            self.formToModel(request.form, obj, False)
-            self.update(obj)
-            flash('<strong>{name}</strong> updated!'.format(name=self.get_label(obj)))
-            return redirect(url_for('%s.list' % self.name, id=id))
-        template='%s/edit.html' % self.name
-        template='crud/edit.html' 
-        return render_template(template , **context)
+            data=self.form.form_data(request.form)
+            errors=self.form.validate(data)
+            if not errors:
+                self.formToModel(request.form, obj, False)
+                self.update(obj)
+                flash('<strong>{name}</strong> updated!'.format(name=self.get_label(obj)))
+                return redirect(url_for('%s.list' % self.name, id=id))
+            else:
+                context['form_data']=data
+                context['form_errors']=errors
+
+        return self.render('edit', context) 
 
     def delete(self, id):
         obj=self.get_object(id)
@@ -65,16 +79,22 @@ class BaseCrud(object):
         context = self.__get_context()
         context['obj']=obj
         context['form']=self.form
+        context['form_data']=self.form.form_data(obj)
 
         if request.method == 'POST':
-            self.formToModel(request.form, obj, True)
-            self.save(obj)
-            flash('<strong>{name}</strong> created!'.format(name=self.get_label(obj)))
-            return redirect(url_for('%s.list' % self.name))
-
-        template='%s/new.html' % self.name
-        template='crud/new.html' 
-        return render_template( template , **context) 
+            data=self.form.form_data(request.form)
+            errors=self.form.validate(data)
+            if not errors:
+                self.formToModel(request.form, obj, True)
+                self.save(obj)
+                flash('<strong>{name}</strong> created!'.format(name=self.get_label(obj)))
+                return redirect(url_for('%s.list' % self.name))
+            else:
+                context['form_data']=data
+                context['form_errors']=errors
+                            
+    
+        return self.render('new', context) 
 
     def __get_context(self):
         ctx= { 'crud_name':self.name, 'crud':self }
@@ -83,6 +103,15 @@ class BaseCrud(object):
         if self.navigation_hint:
             ctx['navigation_hint']=self.navigation_hint
         return ctx    
+
+    def get_tempalte(self,view):
+        template='%s/%s/%s/%s.html' % (current_app.root_path,current_app.template_folder, self.name, view)
+        if os.path.exists(template):
+            return '%s/%s.html' % (self.name, view)
+        return'crud/%s.html' % view 
+
+    def render(self, view, context):
+        return render_template( self.get_tempalte(view) , **context)  
 
     def get_label(self, obj):
         return obj
@@ -130,8 +159,8 @@ class BaseDictCrud(BaseCrud):
         return obj[self.label_prop]
 
     def formToModel(self, form, obj ,isNew):
-        for f in self.form:
-            obj[f['name']]=request.form[f['name']]
+        for f in self.form.fields:
+            obj[f.name]=request.form[f.name]
         if isNew:
             obj[self.pk_prop]=random.randint(0,100000)
         
@@ -168,10 +197,24 @@ class Crud( CrudMeta('NewBase',(BaseDictCrud,),{})):
 
 
 class AppModel(object):
-    def __init__(self):
+    
+    def __init__(self, *initial_data, **kwargs):
         super(AppModel, self).__init__()
-        self.project_name='Project1'
+        self.project_name='Project'
         self.roots=[]  
+
+        for dictionary in initial_data:
+            for key in dictionary:
+                setattr(self, key, dictionary[key])
+        for key in kwargs:
+            setattr(self, key, kwargs[key])
+
+        roots=[]    
+        for r in self.roots:
+            root=BaseDictCrud(**r)
+            root.parent=self
+            roots.append(root) 
+        self.roots=roots    
 
     def register(self, app):
         for f in self.roots:
@@ -182,6 +225,19 @@ class AppModel(object):
         self.roots.append(root)
         root.parent=self        
     
+
+class Base(object):
+      def __init__(self, *initial_data, **kwargs):
+        super(Base, self).__init__()
+        for dictionary in initial_data:
+            for key in dictionary:
+                setattr(self, key, dictionary[key])
+        for key in kwargs:
+            setattr(self, key, kwargs[key])
+
+
+
+
 if __name__ == '__main__':
     c=BaseDictCrud('name', pk_type='int', navigation_hint='2')
     print c.navigation_hint

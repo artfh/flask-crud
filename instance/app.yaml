@@ -1,0 +1,29 @@
+project_name: My Project
+roots:
+# Role
+-   name: role
+    label: Role
+    data_ref: role_list
+    labels: 
+        name: Name
+        actions: Actions
+    list_columns: [ name , actions]
+    form:  
+        -   name: name
+            widget: text
+            validators:  required
+        -   actions
+# User
+-   name: user
+    label: User
+    label_prop: username
+    labels: 
+        username: Username
+        first_name: First Name
+        last_name: Last Name
+    list_columns: [ username , first_name, last_name]
+    form: 
+        -   first_name
+        -   last_name
+        -   name: username
+            validators: required

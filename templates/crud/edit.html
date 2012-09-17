@@ -12,7 +12,7 @@
 	{% block form %}
             <legend>Edit {{crud.label}}</legend>
 
-  {{ forms.form_body(form, obj)}}
+  {{ forms.form_body(form, form_data, form_errors)}}
 
     {% endblock %}     
            

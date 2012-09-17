@@ -6,27 +6,30 @@ import random
 import crud
 import models.role
 
-
+import mymod
+import yaml
 
 
 app = Flask(__name__)
-with app.app_context():
-    current_app.mystat='test123 '
 
 app.secret_key = 'A0Zr98j/3yX R~XsH!jmN]LWX/,?RT'
 
+with app.open_instance_resource('app.yaml') as f:
+    conf = yaml.load(f.read())
+    model=crud.AppModel(conf)
+    model.register(app)
+    print model.project_name
 
-model=models.role.createModel()
-model.register(app)
 
 @app.route("/")
 def index():
-	print current_app.mystat
-	return render_template('index.html', app=model)
+    print current_app.root_path,current_app.template_folder 
+    return render_template('index.html', app=model)
 
 
+app.register_blueprint(mymod.simple_page, url_prefix='/sp')
 
 
 
 if __name__ == "__main__":
-	app.run(debug=True)
+    app.run(debug=True)

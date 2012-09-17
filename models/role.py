@@ -22,16 +22,21 @@ class Role(crud.Crud):
     name='role'
     label='Role'
     
-    form=[
-        {   'name':'name',
-            'type':'text',
-            'label':'Name'
+    fields={
+        'name': {
+            'label':'Name',
+            'list_cell': 'href',
+            'form_widget':'text'
         },
-        {   'name':'actions',
-            'type':'text',
-            'label':'Actions'
+        'actions': {
+            'label':'Actions',
+            'form_widget':'text'
         }
-    ]
+    }
+
+    list_columns=['name', 'actions']
+    form=[ 'name', 'actions' ]
+
     
 
 
@@ -43,11 +48,21 @@ class User(crud.Crud):
     label='User'
     label_prop='username'
 
-    form=[
-        {   'name':'first_name', 'type':'text','label':'First Name'   },
-        {   'name':'last_name', 'type':'text','label':'Last Name'   },
-        {   'name':'username', 'type':'text','label':'Username'   }     
-    ]
+
+    fields={
+            'username': {
+                'label':'Username',
+                'list_cell': 'href'
+            },
+            'first_name': {
+                'label':'First Name',
+            },
+            'last_name': {
+                'label':'Last Name',
+            }
+        }
+    list_columns=['username', 'first_name','last_name']
+    form=[ 'first_name','last_name','username' ]
     
    
 

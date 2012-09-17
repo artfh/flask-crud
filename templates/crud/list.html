@@ -1,7 +1,8 @@
 {% extends "layout/sidebar.html" %}
 
+{% import 'macros/cruds.html' as cruds %}
 
-{% block main_title %}List{% endblock %}
+{% block main_title %}{{crud.label}}s{% endblock %}
 {% block main_title_actions %}<a href="{{ url_for( '%s.new' % crud_name) }}" class="btn">Add {{crud.label}}</a>{% endblock %}
 
 {% block main_body %}
@@ -9,8 +10,17 @@
 <table class="table table-hover">
               <thead>
                 <tr> 
-                {% block table_header %}      
-                  <th>Object</th>
+                {% block table_header %} 
+
+                {% if not crud.list_columns  %}
+                    <th>Objects</th>
+                {% else %}
+                    {% for c in crud.list_columns %}
+                      <th>{{ cruds.field_label(crud,c)}} </th>
+                    {% endfor %}
+                {% endif %}
+
+
                 {% endblock %}                
                 </tr>
               </thead>
@@ -18,7 +28,16 @@
 {% for row in rows %}
     <tr>
       {% block table_row scoped %}
-      <td><a href="{{ url_for('%s.edit' % crud_name, id=crud.get_id(row)) }}">{{ row }}</a></td>
+
+                {% if not crud.list_columns  %}
+                    <td><a href="{{ url_for('%s.edit' % crud_name, id=crud.get_id(row)) }}">{{ row }}</a></td>
+                {% else %}
+                    {% for c in crud.list_columns %}
+                      <td>{{ cruds.el(crud,row, c)}}</td>
+                    {% endfor %}
+                {% endif %}
+
+
       {% endblock %}  
     </tr>
   {% endfor %}

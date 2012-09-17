@@ -1,0 +1,23 @@
+{% macro el(crud, row, column) -%}
+
+
+{% if column  == crud.label_prop  %}
+<a href="{{ url_for('%s.edit' % crud.name, id=crud.get_id(row)) }}">{{row[column]}}</a>
+{% else %}
+	{{row[column]}}
+{% endif %}
+
+
+{%- endmacro %}
+
+
+{% macro field_label(crud, column) -%}
+
+{% if column in crud.labels  %}
+	{{ crud.labels[column]}}
+{% else %}
+	{{ column }}
+{% endif %}
+
+
+{%- endmacro %}
