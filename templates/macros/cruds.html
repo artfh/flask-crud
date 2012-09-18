@@ -1,10 +1,22 @@
 {% macro el(crud, row, column) -%}
 
+{% set style = '' %}
+{% if 'style' in  column %}
+{% set style = column.style %}
+{% endif %}
 
-{% if column  == crud.label_prop  %}
-<a href="{{ url_for('%s.edit' % crud.name, id=crud.get_id(row)) }}">{{row[column]}}</a>
+
+
+
+{% if column.name  == crud.label_prop or column.as=='href' %}
+<a href="{{ url_for('%s.edit' % crud.name, id=crud.get_id(row)) }}">
+	<span style="{{style}}">{{row[column.name] | safe}}</span></a>
+{% elif column.as=='img' %}
+<a href="{{ url_for('%s.edit' % crud.name, id=crud.get_id(row)) }}">
+<img src="{{row[column.name]}}" style="{{style}}"/>
+</a>
 {% else %}
-	{{row[column]}}
+<span style="{{style}}">{{row[column.name] | safe}}</span>
 {% endif %}
 
 
@@ -16,7 +28,7 @@
 {% if column in crud.labels  %}
 	{{ crud.labels[column]}}
 {% else %}
-	{{ column }}
+	{{ column.capitalize() }}
 {% endif %}
 
 

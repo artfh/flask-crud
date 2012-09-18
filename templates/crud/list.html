@@ -16,7 +16,7 @@
                     <th>Objects</th>
                 {% else %}
                     {% for c in crud.list_columns %}
-                      <th>{{ cruds.field_label(crud,c)}} </th>
+                      <th>{{ cruds.field_label(crud,c.name)}} </th>
                     {% endfor %}
                 {% endif %}
 

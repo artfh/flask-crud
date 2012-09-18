@@ -3,6 +3,27 @@
 {% import 'macros/forms.html' as forms %}
 
 
+{% block head %}
+ <link href="{{ url_for('static',filename='css/bootstrap-wysihtml5-0.0.2.css')}}" rel="stylesheet">
+   
+{% endblock %}
+
+   
+{% block footer_scripts %}  
+ <script src="{{ url_for('static',filename='js/wysihtml5-0.3.0_rc2.js')}}"></script>
+ <script src="{{ url_for('static',filename='js/bootstrap-wysihtml5-0.0.2.min.js')}}"></script>
+
+<script type="text/javascript">
+
+$(function() {
+  $('.richtext').wysihtml5();
+});
+
+</script>
+
+{% endblock %}
+
+
 {% block main_title %}<small>{{crud.label}}</small> {{ crud.get_label(obj)}} {% endblock %}
 
 {% block main_body %}
@@ -13,6 +34,7 @@
             <legend>Edit {{crud.label}}</legend>
 
   {{ forms.form_body(form, form_data, form_errors)}}
+
 
     {% endblock %}     
            
@@ -39,7 +61,7 @@
   </div>
   <div class="modal-footer">
     <button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>
-    <a href="{{ url_for('%s.delete' % crud_name, id=obj.id) }}" class="btn btn-danger" >Delete</a>
+    <a href="{{ url_for('%s.delete' % crud_name, id=crud.get_id(obj)) }}" class="btn btn-danger" >Delete</a>
   </div>
 </div>          
 

@@ -21,12 +21,16 @@ class Form(object):
             f.validate(d,errors)
         return errors
 
+    def set_obj(self, form_data, obj):
+        for f in self.fields:
+            obj[f.name]=form_data[f.name]
+
 class Field(object):
 
     def __init__(self, name, label=None, widget='text', validators=[]):
         super(Field, self).__init__()
         self.name=name
-        self.label=name
+        self.label=name.capitalize()
         if label:
             self.label=label
         
@@ -46,6 +50,12 @@ class Field(object):
                     if self.name not in obj or not obj.get(self.name) or len(obj.get(self.name).strip())==0:
                         errors[self.name]='required'
 
+class Column(object):
+
+    def __init__(self, name, label=None, widget='text'):
+        super(Field, self).__init__()
+            
+
         
 
 
@@ -63,8 +73,8 @@ def create_form(field_props, labels):
                     validators=[v]
                 if type(v)==list:
                     validators=v
-            print '>>>',f, labels, validators        
-            field=Field(name=f['name'], label=labels.get(f['name']),validators=validators)
+
+            field=Field(name=f['name'], label=labels.get(f['name']),validators=validators, widget=f.get('widget','text'))
         if field:
 
             fields.append(field)

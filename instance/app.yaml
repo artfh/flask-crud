@@ -2,11 +2,7 @@ project_name: My Project
 roots:
 # Role
 -   name: role
-    label: Role
     data_ref: role_list
-    labels: 
-        name: Name
-        actions: Actions
     list_columns: [ name , actions]
     form:  
         -   name: name
@@ -15,7 +11,6 @@ roots:
         -   actions
 # User
 -   name: user
-    label: User
     label_prop: username
     labels: 
         username: Username
@@ -27,3 +22,55 @@ roots:
         -   last_name
         -   name: username
             validators: required
+#Apps
+-   name: app
+    label: Application
+    list_columns: [ name, desc ]
+    pk_prop: _id
+    pk_type: 
+    form: 
+        -   name: name
+            validators: required
+        -   desc
+        -   iconUrl
+
+#events
+-   name: event
+    list_columns: 
+        -   time 
+        -   image:
+                as: img
+                style: width:100px  
+        -   name:
+                as: href
+        -   description
+    pk_prop: _id
+    pk_type: 
+    form: 
+        -   name: time
+            validators: required
+        -   name: name
+            validators: required
+        -   name: description
+            widget: richtext
+        -   name: image
+
+
+
+
+# Collections
+data:
+    role_list: 
+        -   name: Admin
+            actions: read,write
+            id: 1
+        -   name: User
+            actions: read
+            id: 2
+    app:
+        db_name: test
+        col_name: apps
+
+    event:
+        db_name: test
+        col_name: b_news

@@ -2,24 +2,24 @@ from flask import render_template,request, session, redirect, url_for, flash,cur
 import random
 import os
 from forms import Form, create_form
+import mongo
 
    
 class BaseCrud(object):
     
-
     def __init__(self, name, **kwargs):
         super(BaseCrud, self).__init__()
         self.name=name
         self.pk_type='int'
         self.navigation_hint=name+'.list'
         self.form=[]
-        self.label=name
+        self.label=name.capitalize()
         self.url='/{0}/'.format(name)
         self.parent=None
         self.labels={}
         self.list_columns=[]
         self.form=Form()
-
+        self.collection=None
 
 
         if 'pk_type' in kwargs: self.pk_type=kwargs['pk_type'] 
@@ -27,7 +27,8 @@ class BaseCrud(object):
         if 'label' in kwargs: self.label=kwargs['label'] 
         if 'url' in kwargs: self.url=kwargs['url'] 
         if 'labels' in kwargs: self.labels=kwargs['labels'] 
-        if 'list_columns' in kwargs: self.list_columns=kwargs['list_columns'] 
+        if 'list_columns' in kwargs:
+            self.list_columns=create_columns(kwargs['list_columns'])
         if 'form' in kwargs: 
             self.form=create_form(kwargs['form'],self.labels)  
         
@@ -36,17 +37,17 @@ class BaseCrud(object):
 
     def list(self):
         context = self.__get_context()
-        context['rows']=self.get_objects()
+        context['rows']=self.collection.list()
         return self.render('list', context) 
 
     def view(self, id):
-        obj=self.get_object(id)
+        obj=self.collection.find(self.pk_prop,id)
         context = self.__get_context()
         context['obj']=obj
         return 'view '+str(id)+' '+str(context)
 
     def edit(self, id):
-        obj=self.get_object(id)
+        obj=self.collection.find(self.pk_prop,id)
         context = self.__get_context()
         context['obj']=obj
         context['form']=self.form
@@ -56,8 +57,8 @@ class BaseCrud(object):
             data=self.form.form_data(request.form)
             errors=self.form.validate(data)
             if not errors:
-                self.formToModel(request.form, obj, False)
-                self.update(obj)
+                self.form.set_obj(request.form, obj)
+                self.collection.update(obj)
                 flash('<strong>{name}</strong> updated!'.format(name=self.get_label(obj)))
                 return redirect(url_for('%s.list' % self.name, id=id))
             else:
@@ -67,15 +68,15 @@ class BaseCrud(object):
         return self.render('edit', context) 
 
     def delete(self, id):
-        obj=self.get_object(id)
+        obj=self.collection.find(self.pk_prop,id)
         context = self.__get_context()
         context['obj']=obj
-        self.delete_obj(obj)
+        self.collection.delete(obj)
         flash('<strong>{name}</strong> deleted!'.format(name=self.get_label(obj)))
         return redirect(url_for('%s.list' % self.name))
 
     def new(self):
-        obj=self.new_object()
+        obj=self.collection.new_object()
         context = self.__get_context()
         context['obj']=obj
         context['form']=self.form
@@ -85,8 +86,8 @@ class BaseCrud(object):
             data=self.form.form_data(request.form)
             errors=self.form.validate(data)
             if not errors:
-                self.formToModel(request.form, obj, True)
-                self.save(obj)
+                self.form.set_obj(request.form, obj)
+                self.collection.save(obj)
                 flash('<strong>{name}</strong> created!'.format(name=self.get_label(obj)))
                 return redirect(url_for('%s.list' % self.name))
             else:
@@ -121,10 +122,14 @@ class BaseCrud(object):
     
 
     def register(self, app):
+        id_name='<id>'
+        if self.pk_type:
+            id_name='<%s:id>' % self.pk_type
+
         app.add_url_rule('%sl' % self.url, '{0}.list'.format(self.name), self.list)   
-        app.add_url_rule('%sv/<%s:id>' % (self.url, self.pk_type), '{0}.view'.format(self.name), self.view)   
-        app.add_url_rule('%se/<%s:id>' % (self.url, self.pk_type), '{0}.edit'.format(self.name), self.edit, methods=['POST', 'GET'])   
-        app.add_url_rule('%sd/<%s:id>' % (self.url, self.pk_type), '{0}.delete'.format(self.name), self.delete)   
+        app.add_url_rule('%sv/%s' % (self.url,id_name), '{0}.view'.format(self.name), self.view)   
+        app.add_url_rule('%se/%s' % (self.url, id_name), '{0}.edit'.format(self.name), self.edit, methods=['POST', 'GET'])   
+        app.add_url_rule('%sd/%s' % (self.url, id_name), '{0}.delete'.format(self.name), self.delete)   
         app.add_url_rule('%sn' % self.url, '{0}.new'.format(self.name), self.new, methods=['POST', 'GET'])   
 
 
@@ -142,38 +147,39 @@ class BaseDictCrud(BaseCrud):
         if 'label_prop' in kwargs: self.label_prop=kwargs['label_prop'] 
 
 
-
-    def get_object(self,id):
-        return  next(u for u in self.objects if u[self.pk_prop] == id)
-
-    def get_objects(self):
-        return self.objects  
-
-    def new_object(self):
-        return {}             
-
     def get_id(self, obj):
         return obj[self.pk_prop]
 
     def get_label(self, obj):
         return obj[self.label_prop]
 
-    def formToModel(self, form, obj ,isNew):
-        for f in self.form.fields:
-            obj[f.name]=request.form[f.name]
-        if isNew:
-            obj[self.pk_prop]=random.randint(0,100000)
+
         
 
+class Collection(object):
+
+    def __init__(self, objects=[] ):
+        super(Collection, self).__init__()
+        self.objects=objects
+
+    def find(self, col, v):
+        return  next(u for u in self.objects if u[col] == v)
+
+    def list(self):
+        return self.objects  
+
+    def new_object(self):
+        return {}             
+
     def save(self,obj):
+        obj['id']=random.randint(0,100000)
         self.objects.append(obj)
 
     def update(self,obj):
         pass
 
-    def delete_obj(self,obj):
+    def delete(self,obj):
         self.objects.remove(obj)
-
 
         
 
@@ -209,10 +215,22 @@ class AppModel(object):
         for key in kwargs:
             setattr(self, key, kwargs[key])
 
+        print '>>>>>>>>',initial_data[0]['data']   
         roots=[]    
         for r in self.roots:
             root=BaseDictCrud(**r)
             root.parent=self
+
+            data_ref_name=r.get('data_ref', root.name)
+
+            if data_ref_name in initial_data[0]['data']:
+                data_ref=initial_data[0]['data'][data_ref_name]
+                if type(data_ref)==dict:
+                    root.collection=mongo.MongoCollection(**data_ref)
+                else:    
+                    root.collection=Collection(objects=data_ref)
+            else:
+                root.collection=Collection(objects=[])
             roots.append(root) 
         self.roots=roots    
 
@@ -235,6 +253,25 @@ class Base(object):
         for key in kwargs:
             setattr(self, key, kwargs[key])
 
+
+class Column(object):
+
+    def __init__(self, name, widget='text'):
+        super(Column, self).__init__()
+
+def create_columns(ops):
+    columns=[]
+    for o in ops:
+        if type(o)==str:
+            columns.append({ 'name': o ,  'as':'text'  })
+        if type(o)==dict:
+            k=o.keys()[0]
+            v=o.get(k,{ 'as':'text' })
+            dd={ 'name': k }
+            dd.update(v)
+            columns.append(dd)   
+    print columns
+    return columns 
 
 
 
